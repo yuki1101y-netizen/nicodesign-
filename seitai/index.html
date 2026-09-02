@@ -1233,6 +1233,23 @@ h2.hjp{font-size:16px;letter-spacing:.1em}
 }
 
 </style>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WWG5MHB05B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WWG5MHB05B');
+</script>
+
+<!-- Microsoft Clarity -->
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "ybt7cvjczi");
+</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2652,6 +2669,61 @@ var fix = document.getElementById("fixcta"), last = document.getElementById("con
 new IntersectionObserver(function(es){ hide = es[0].isIntersecting; upd(); }, { threshold:.1 }).observe(last);
 function upd(){ fix.classList.toggle("on", scrollY > innerHeight * .9 && !hide); }
 addEventListener("scroll", upd, { passive:true }); upd();
+
+/* 読了率を記録（25/50/75/100%） */
+(function(){
+  var marks = [25,50,75,100], hit = {};
+  function chk(){
+    var h = document.documentElement.scrollHeight - innerHeight;
+    if (h <= 0) return;
+    var p = Math.round(scrollY / h * 100);
+    marks.forEach(function(m){
+      if (p >= m && !hit[m]) {
+        hit[m] = true;
+        if (window.gtag) gtag("event","scroll_depth",{ percent:m });
+        if (window.clarity) clarity("event","scroll_" + m);
+      }
+    });
+  }
+  addEventListener("scroll", chk, { passive:true }); chk();
+})();
+
+/* Clarity：LINEタップを記録 */
+document.querySelectorAll("[data-line], .sc-cta").forEach(function(a){
+  a.addEventListener("click", function(){
+    if (window.clarity) {
+      var where = a.closest(".fixcta") ? "fixcta"
+                : a.classList.contains("sc-cta") ? "selfcheck"
+                : a.closest("#cta1") ? "cta1"
+                : a.closest("#contact") ? "final" : "other";
+      clarity("event", "line_tap_" + where);
+    }
+    if (window.gtag) gtag("event", "line_tap", { position: where });
+  });
+});
+
+/* Clarity：例文コピーを記録 */
+document.querySelectorAll(".chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    if (window.clarity) clarity("event","copy_sample");
+    if (window.gtag) gtag("event","copy_sample");
+  });
+});
+
+/* Clarity：セルフチェックの個数を記録 */
+(function(){
+  var l = document.getElementById("scList");
+  if (!l) return;
+  var sent = false;
+  l.addEventListener("change", function(){
+    var n = l.querySelectorAll("input:checked").length;
+    if (n >= 3 && !sent) {
+      if (window.clarity) clarity("event","selfcheck_3plus");
+      if (window.gtag) gtag("event","selfcheck_3plus", { checked: n });
+      sent = true;
+    }
+  });
+})();
 </script>
 
 </body>
